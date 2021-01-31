@@ -138,11 +138,20 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		p.Error("Pattern failed to match", nil),
 	),
 	"Range": p.CapId(p.Concat(
-		p.Literal("["),
+		p.Or(
+			p.Literal("["),
+			p.Error("No opening '[' found", nil),
+		),
 		p.NonTerm("Number"),
-		p.Literal(":"),
+		p.Or(
+			p.Literal(":"),
+			p.Error("No ':' found", nil),
+		),
 		p.NonTerm("Number"),
-		p.Literal("]"),
+		p.Or(
+			p.Literal("]"),
+			p.Error("No closing ']' found", nil),
+		),
 	), rangeId),
 	"Char": p.CapId(p.Or(
 		p.Concat(

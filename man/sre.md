@@ -94,7 +94,7 @@ Replace all occurrences of "foo" with "bar" in the range of lines 5-10
 (zero-indexed):
 
 ```
-l[5:10]s/foo/bar | p
+l[5:10]s/foo/bar/ | p
 ```
 
 Print all lines containing "rob" but not "robot":
