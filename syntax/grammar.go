@@ -207,7 +207,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 	case xId, yId, gId, vId, sId:
 		regex, err := regexp.Compile(pattern(n.Children[1], in))
 		if err != nil {
-			return nil, fmt.Errorf("x pattern: %w", err)
+			return nil, fmt.Errorf("pattern: %w", err)
 		}
 		if id == sId {
 			c = sre.S{
@@ -267,8 +267,6 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 		c = sre.U{
 			Evaluator: eval,
 		}
-	default:
-		panic("error: not a valid ID")
 	}
 
 	return c, nil
