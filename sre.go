@@ -144,6 +144,9 @@ func (n N) Evaluate(b []byte) []byte {
 		n.End = len(b) + 1 + n.End
 	}
 
+	n.Start = clamp(n.Start, 0, len(b))
+	n.End = clamp(n.End, 0, len(b))
+
 	return ReplaceSlice(b, n.Start, n.End, n.Cmd.Evaluate(b[n.Start:n.End]))
 }
 
@@ -171,6 +174,9 @@ func (l L) Evaluate(b []byte) []byte {
 	start := IndexN(b, []byte{'\n'}, l.Start) + 1
 	end := IndexN(b, []byte{'\n'}, l.End) + 1
 
+	start = clamp(start, 0, len(b))
+	end = clamp(end, 0, len(b))
+
 	return ReplaceSlice(b, start, end, l.Cmd.Evaluate(b[start:end]))
 }
 
@@ -186,4 +192,14 @@ type U struct {
 // Evaluate applies the evaluator function.
 func (u U) Evaluate(b []byte) []byte {
 	return u.Evaluator(b)
+}
+
+func clamp(a, start, end int) int {
+	if a > end {
+		return end
+	}
+	if a < start {
+		return start
+	}
+	return a
 }
