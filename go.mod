@@ -1,4 +1,4 @@
-module github.com/zyedidia/sre
+module github.com/zyedidia/sregx
 
 go 1.15
 

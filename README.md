@@ -1,15 +1,15 @@
 # Structural Regular Expressions
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/zyedidia/sre.svg)](https://pkg.go.dev/github.com/zyedidia/sre)
-[![Go Report Card](https://goreportcard.com/badge/github.com/zyedidia/sre)](https://goreportcard.com/report/github.com/zyedidia/sre)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/sre/blob/master/LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/github.com/zyedidia/sregx.svg)](https://pkg.go.dev/github.com/zyedidia/sregx)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zyedidia/sregx)](https://goreportcard.com/report/github.com/zyedidia/sregx)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/sregx/blob/master/LICENSE)
 
-SRE is a package and tool for using structural regular expressions as described
-by Rob Pike ([link](http://doc.cat-v.org/bell_labs/structural_regexps/)). SRE
+sregx is a package and tool for using structural regular expressions as described
+by Rob Pike ([link](http://doc.cat-v.org/bell_labs/structural_regexps/)). sregx
 provides a very simple Go package for creating structural regular expression
-commands as well as a library for parsing and compiling SRE commands from the
+commands as well as a library for parsing and compiling sregx commands from the
 text format used in Pike's description. A CLI tool for using structural regular
-expressions is also provided in `./cmd/sre`, allowing you to perform advanced
+expressions is also provided in `./cmd/sregx`, allowing you to perform advanced
 text manipulation from the command-line.
 
 In a structural regular expression, regular expressions are composed using
@@ -44,12 +44,12 @@ supported:
   returns the resulting stdout of the command. Shell commands use a simple
   syntax where single or double quotes can be used to group arguments, and
   environment variables are accessible with `$`. This command is only directly
-  available as part of the SRE CLI tool.
+  available as part of the sregx CLI tool.
 
 The commands `n[...]`, `m[...]`, and `u` are additions to the original
 description of structural regular expressions.
 
-The SRE tool also provides another augmentation to the original SRE description
+The sregx tool also provides another augmentation to the original sregx description
 from Pike: command pipelines. A command may be given as `<cmd> | <cmd> | ...`
 where the input of each command is the output of the previous one.
 
@@ -59,7 +59,7 @@ Most of these examples are from Pike's description, so you can look there for
 more detailed explanation. Since `p` is the only command that prints,
 technically you must append `| p` to commands that search and replace, because
 otherwise nothing will be printed. However, since you will probably forget to
-do this, the SRE tool will print the result of the final command before
+do this, the sregx tool will print the result of the final command before
 terminating if there were no uses of `p` anywhere within the command. Thus when
 using the CLI tool you can omit the `| p` in the following commands and still
 see the result.
@@ -133,22 +133,22 @@ special characters.
 
 ## Installation
 
-There are three ways to install `sre`.
+There are three ways to install `sregx`.
 
 1. Download the prebuilt binary from the releases page (comes with man file).
 
 2. Install from source:
 
 ```
-git clone https://github.com/zyedidia/sre
-cd sre
+git clone https://github.com/zyedidia/sregx
+cd sregx
 make build # or make install to install to $GOBIN
 ```
 
 3. Install with `go get` (version info will be missing):
 
 ```
-go get github.com/zyedidia/sre/cmd/sre
+go get github.com/zyedidia/sregx/cmd/sregx
 ```
 
 ### Usage
@@ -158,7 +158,7 @@ file is given, stdin will be used. Here is an example to capitalize all
 occurrences of the word 'i' in `file.txt`:
 
 ```
-sre 'x/[A-Za-z]+/ g/^i$/ c/I/' file.txt
+sregx 'x/[A-Za-z]+/ g/^i$/ c/I/' file.txt
 ```
 
 The tool tries to provide high quality error messages when you make a mistake

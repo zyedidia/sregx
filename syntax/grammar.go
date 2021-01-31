@@ -11,7 +11,7 @@ import (
 	"github.com/zyedidia/gpeg/memo"
 	p "github.com/zyedidia/gpeg/pattern"
 	"github.com/zyedidia/gpeg/vm"
-	"github.com/zyedidia/sre"
+	"github.com/zyedidia/sregx"
 )
 
 // MultiError represents multiple errors.
@@ -46,8 +46,8 @@ const (
 	uId
 )
 
-var grammar = p.Grammar("SRE", map[string]p.Pattern{
-	"SRE": p.Concat(
+var grammar = p.Grammar("Sregex", map[string]p.Pattern{
+	"Sregex": p.Concat(
 		p.NonTerm("Command"),
 		p.Star(p.Concat(
 			p.NonTerm("Pipe"),
@@ -186,11 +186,11 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 	"Space": p.Set(charset.New([]byte{9, 10, 11, 12, 13, ' '})),
 })
 
-// Compile the input string s into an sre expression. The out writer will be
+// Compile the input string s into an sregx expression. The out writer will be
 // used when creating p commands (a p command will write to the given writer,
 // generally this will be os.Stdout). A map of user functions may be given to
 // define custom command types. The command name must be a single letter.
-func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sre.Command, error) {
+func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sregx.Command, error) {
 	peg := p.MustCompile(grammar)
 	code := vm.Encode(peg)
 	in := input.StringReader(s)
@@ -207,7 +207,7 @@ func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sre.Command,
 	}
 
 	inp := input.NewInput(in)
-	cmds := make(sre.CommandPipeline, len(ast))
+	cmds := make(sregx.CommandPipeline, len(ast))
 	for i, n := range ast {
 		var err error
 		cmds[i], err = compile(n, inp, out, usrfns)
@@ -269,10 +269,10 @@ func rangeNums(n *capture.Node, in *input.Input) (int, int) {
 
 // An EvalMaker uses some definition string to create a function that can do
 // evaluation.
-type EvalMaker func(s string) (sre.Evaluator, error)
+type EvalMaker func(s string) (sregx.Evaluator, error)
 
-func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]EvalMaker) (sre.Command, error) {
-	var c sre.Command
+func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]EvalMaker) (sregx.Command, error) {
+	var c sregx.Command
 
 	id := n.Children[0].Id
 	switch id {
@@ -285,7 +285,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 			}
 		}
 		if id == sId {
-			c = sre.S{
+			c = sregx.S{
 				Patt:    regex,
 				Replace: []byte(pattern(n.Children[2], in)),
 			}
@@ -296,29 +296,29 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 			}
 			switch id {
 			case xId:
-				c = sre.X{
+				c = sregx.X{
 					Patt: regex,
 					Cmd:  cmd,
 				}
 			case yId:
-				c = sre.Y{
+				c = sregx.Y{
 					Patt: regex,
 					Cmd:  cmd,
 				}
 			case gId:
-				c = sre.G{
+				c = sregx.G{
 					Patt: regex,
 					Cmd:  cmd,
 				}
 			case vId:
-				c = sre.V{
+				c = sregx.V{
 					Patt: regex,
 					Cmd:  cmd,
 				}
 			}
 		}
 	case cId:
-		c = sre.C{
+		c = sregx.C{
 			Change: []byte(pattern(n.Children[1], in)),
 		}
 	case nId, lId:
@@ -328,24 +328,24 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 			return nil, err
 		}
 		if id == nId {
-			c = sre.N{
+			c = sregx.N{
 				Start: start,
 				End:   end,
 				Cmd:   cmd,
 			}
 		} else { // lId
-			c = sre.L{
+			c = sregx.L{
 				Start: start,
 				End:   end,
 				Cmd:   cmd,
 			}
 		}
 	case pId:
-		c = sre.P{
+		c = sregx.P{
 			W: out,
 		}
 	case dId:
-		c = sre.D{}
+		c = sregx.D{}
 	case uId:
 		name := string(in.Slice(n.Children[0].Start(), n.Children[0].End()))
 		def := pattern(n.Children[1], in)
@@ -364,7 +364,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 			}
 		}
 
-		c = sre.U{
+		c = sregx.U{
 			Evaluator: eval,
 		}
 	}

@@ -13,32 +13,32 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/mattn/go-shellwords"
 	"github.com/zyedidia/gpeg/vm"
-	"github.com/zyedidia/sre"
-	"github.com/zyedidia/sre/syntax"
+	"github.com/zyedidia/sregx"
+	"github.com/zyedidia/sregx/syntax"
 )
 
 // Returns true if there is a p command used anywhere within this command.
-func hasP(cmd sre.Command) bool {
+func hasP(cmd sregx.Command) bool {
 	switch cmd := cmd.(type) {
-	case sre.P:
+	case sregx.P:
 		return true
-	case sre.CommandPipeline:
+	case sregx.CommandPipeline:
 		for _, c := range cmd {
 			if hasP(c) {
 				return true
 			}
 		}
-	case sre.X:
+	case sregx.X:
 		return hasP(cmd.Cmd)
-	case sre.Y:
+	case sregx.Y:
 		return hasP(cmd.Cmd)
-	case sre.G:
+	case sregx.G:
 		return hasP(cmd.Cmd)
-	case sre.V:
+	case sregx.V:
 		return hasP(cmd.Cmd)
-	case sre.L:
+	case sregx.L:
 		return hasP(cmd.Cmd)
-	case sre.N:
+	case sregx.N:
 		return hasP(cmd.Cmd)
 	}
 	return false
@@ -53,7 +53,7 @@ func main() {
 	}
 
 	if opts.Version {
-		fmt.Println("sre version", Version)
+		fmt.Println("sregx version", Version)
 		os.Exit(0)
 	}
 
@@ -71,7 +71,7 @@ func main() {
 	cmds, err := syntax.Compile(args[0], os.Stdout, map[string]syntax.EvalMaker{
 		// the u command is a custom command that executes a shell command to
 		// perform the transformation.
-		"u": func(s string) (sre.Evaluator, error) {
+		"u": func(s string) (sregx.Evaluator, error) {
 			args, err := shellwords.Parse(s)
 			if err != nil {
 				return nil, err

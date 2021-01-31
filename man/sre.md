@@ -1,18 +1,18 @@
 ---
-title: sre
+title: sregx
 section: 1
-header: SRE Manual
+header: sregx Manual
 ---
 
 # NAME
-  SRE - Structural Regular Expressions Tool
+  sregx - Structural Regular Expressions Tool
 
 # SYNOPSIS
-  sre `[OPTIONS] EXPRESSION [INPUT-FILE]`
+  sregx `[OPTIONS] EXPRESSION [INPUT-FILE]`
 
 # DESCRIPTION
-  SRE is a tool for executing structural regular expressions from the command
-  line. SRE can be used to operate on streams of data and perform advanced
+  sregx is a tool for executing structural regular expressions from the command
+  line. sregx can be used to operate on streams of data and perform advanced
   search and replace. For more information about structural regular
   expressions, see Rob Pike's original description at
   [http://doc.cat-v.org/bell_labs/structural_regexps/](http://doc.cat-v.org/bell_labs/structural_regexps/).
@@ -52,12 +52,12 @@ header: SRE Manual
   and returns the resulting stdout of the command. Shell commands use a simple
   syntax where single or double quotes can be used to group arguments, and
   environment variables are accessible with **`$`**. This command is only
-  directly available as part of the SRE CLI tool.
+  directly available as part of the sregx CLI tool.
 
 The commands **`n[...]`**, **`m[...]`**, and **`u`** are additions to the
 original description of structural regular expressions.
 
-The SRE tool also provides another augmentation to the original SRE description
+The sregx tool also provides another augmentation to the original sregx description
 from Pike: command pipelines. A command may be given as **`<cmd> | <cmd> | ...`**
 where the input of each command is the output of the previous one.
 
@@ -74,7 +74,7 @@ Most of these examples are from Pike's description, so you can look there for
 more detailed explanation. Since `p` is the only command that prints,
 technically you must append `| p` to commands that search and replace, because
 otherwise nothing will be printed. However, since you will probably forget to
-do this, the SRE tool will print the result of the final command before
+do this, the sregx tool will print the result of the final command before
 terminating if there were no calls to `p`. Thus when using the CLI tool you can
 omit the `| p` in the following commands and still see the result.
 
@@ -157,7 +157,7 @@ double quotes to prevent your shell from interpreting special characters.
 
 # BUGS
 
-See GitHub Issues: <https://github.com/zyedidia/sre/issues>
+See GitHub Issues: <https://github.com/zyedidia/sregx/issues>
 
 # AUTHOR
 

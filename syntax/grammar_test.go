@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/zyedidia/sre"
-	"github.com/zyedidia/sre/syntax"
+	"github.com/zyedidia/sregx"
+	"github.com/zyedidia/sregx/syntax"
 )
 
 type Test struct {
@@ -15,7 +15,7 @@ type Test struct {
 	want  string
 }
 
-func check(cmd sre.Command, tests []Test, t *testing.T) {
+func check(cmd sregx.Command, tests []Test, t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			out := cmd.Evaluate([]byte(tt.input))

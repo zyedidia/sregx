@@ -8,24 +8,24 @@ GOARCH ?= $(shell go env GOHOSTARCH)
 PKGEXT = $(VERSION)-$(GOOS)-$(GOARCH)
 
 build:
-	go build -trimpath -ldflags "-s -w $(GOVARS)" ./cmd/sre
+	go build -trimpath -ldflags "-s -w $(GOVARS)" ./cmd/sregx
 
 install:
-	go install -trimpath -ldflags "-s -w $(GOVARS)" ./cmd/sre
+	go install -trimpath -ldflags "-s -w $(GOVARS)" ./cmd/sregx
 
-sre.1: man/sre.md
-	pandoc man/sre.md -s -t man -o sre.1
+sregx.1: man/sregx.md
+	pandoc man/sregx.md -s -t man -o sregx.1
 
-package: build sre.1
-	mkdir sre-$(PKGEXT)
-	cp README.md sre-$(PKGEXT)
-	cp LICENSE sre-$(PKGEXT)
-	cp sre.1 sre-$(PKGEXT)
-	cp sre sre-$(PKGEXT)
-	tar -czf sre-$(PKGEXT).tar.gz sre-$(PKGEXT)
+package: build sregx.1
+	mkdir sregx-$(PKGEXT)
+	cp README.md sregx-$(PKGEXT)
+	cp LICENSE sregx-$(PKGEXT)
+	cp sregx.1 sregx-$(PKGEXT)
+	cp sregx sregx-$(PKGEXT)
+	tar -czf sregx-$(PKGEXT).tar.gz sregx-$(PKGEXT)
 
 clean:
-	rm -f sre sre.1 sre-*.tar.gz
-	rm -rf sre-*/
+	rm -f sregx sregx.1 sregx-*.tar.gz
+	rm -rf sregx-*/
 
 .PHONY: build clean install package

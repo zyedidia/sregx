@@ -1,11 +1,11 @@
-package sre_test
+package sregx_test
 
 import (
 	"bytes"
 	"regexp"
 	"testing"
 
-	"github.com/zyedidia/sre"
+	"github.com/zyedidia/sregx"
 )
 
 type Test struct {
@@ -14,7 +14,7 @@ type Test struct {
 	want  string
 }
 
-func check(cmd sre.Command, tests []Test, t *testing.T) {
+func check(cmd sregx.Command, tests []Test, t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			out := cmd.Evaluate([]byte(tt.input))
@@ -26,7 +26,7 @@ func check(cmd sre.Command, tests []Test, t *testing.T) {
 }
 
 func TestS(t *testing.T) {
-	cmd := sre.S{
+	cmd := sregx.S{
 		Patt:    regexp.MustCompile("([A-Za-z]+) ([A-Za-z]+)"),
 		Replace: []byte("$2 $1"),
 	}
@@ -39,9 +39,9 @@ func TestS(t *testing.T) {
 }
 
 func TestD(t *testing.T) {
-	cmd := sre.X{
+	cmd := sregx.X{
 		Patt: regexp.MustCompile("string"),
-		Cmd:  sre.D{},
+		Cmd:  sregx.D{},
 	}
 
 	tests := []Test{
@@ -55,17 +55,17 @@ func TestD(t *testing.T) {
 func TestCVar(t *testing.T) {
 	// Renames c variables called 'n' to 'num'. Omits matches in strings.
 	// expression: y/".*"/y/'.*'/x/[a-zA-Z0-9]+/g/n/v/../c/num/
-	cmd := sre.Y{
+	cmd := sregx.Y{
 		Patt: regexp.MustCompile(`".*"`),
-		Cmd: sre.Y{
+		Cmd: sregx.Y{
 			Patt: regexp.MustCompile(`'.*'`),
-			Cmd: sre.X{
+			Cmd: sregx.X{
 				Patt: regexp.MustCompile(`[a-zA-z0-9]+`),
-				Cmd: sre.G{
+				Cmd: sregx.G{
 					Patt: regexp.MustCompile(`n`),
-					Cmd: sre.V{
+					Cmd: sregx.V{
 						Patt: regexp.MustCompile(`..`),
-						Cmd: sre.C{
+						Cmd: sregx.C{
 							Change: []byte("num"),
 						},
 					},
@@ -98,13 +98,13 @@ int main() {
 func TestICapitalize(t *testing.T) {
 	// Program to capitalize 'i's
 	// x/[A-Za-z]+/ g/i/ v/../ c/I/
-	cmd := sre.X{
+	cmd := sregx.X{
 		Patt: regexp.MustCompile("[A-Za-z]+"),
-		Cmd: sre.G{
+		Cmd: sregx.G{
 			Patt: regexp.MustCompile("i"),
-			Cmd: sre.V{
+			Cmd: sregx.V{
 				Patt: regexp.MustCompile(".."),
-				Cmd: sre.C{
+				Cmd: sregx.C{
 					Change: []byte("I"),
 				},
 			},
@@ -122,11 +122,11 @@ func TestICapitalize(t *testing.T) {
 func TestICapitalizeAlternate(t *testing.T) {
 	// Alternate program to capitalize 'i's
 	// x/[A-Za-z]+/ g/^i$/ c/I/
-	cmd := sre.X{
+	cmd := sregx.X{
 		Patt: regexp.MustCompile("[A-Za-z]+"),
-		Cmd: sre.G{
+		Cmd: sregx.G{
 			Patt: regexp.MustCompile("^i$"),
-			Cmd: sre.C{
+			Cmd: sregx.C{
 				Change: []byte("I"),
 			},
 		},

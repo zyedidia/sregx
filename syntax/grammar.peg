@@ -1,6 +1,6 @@
 # This grammar is implemented in the grammar.go file but is written here for
 # documentation purposes.
-SRE           <- Command (Pipe Command)* !.
+Sregx         <- Command (Pipe Command)* !.
 Command       <- 'x' RCommand
                / 'y' RCommand
                / 'g' RCommand
