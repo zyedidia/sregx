@@ -160,6 +160,9 @@ occurrences of the word 'i' in `file.txt`:
 sre 'x/[A-Za-z]+/ g/^i$/ c/I/' file.txt
 ```
 
+The tool tries to provide high quality error messages when you make a mistake
+in the expression syntax.
+
 ## Base library
 
 The base library is very simple and small (roughly 100 lines of code). Each
@@ -174,3 +177,18 @@ as a delimiter. The backslash (`\`) may be used to escape `/` or `\`, or to
 create special characters such as `\n`, `\r`, or `\t`. The syntax also supports
 specifying arbitrary bytes using octal, for example `\14`. Regular expressions
 use the Go syntax described [here](https://golang.org/pkg/regexp/syntax/).
+
+# Future Work
+
+Here are some ideas for some features that could be implemented in the future.
+
+* Internal manipulation language. Currently the `u` command runs shell
+  commands. This is very flexible but can be costly because a new process is
+  run to perform each transformation. For better performance we could provide a
+  small language that has some string manipulation functions like `toupper`. A
+  good candidate for this language would be Lua. This would also improve
+  Windows support since most Windows environments lack utilities like `tr`.
+* Different regex engine. The Go regex engine is pretty good, but isn't
+  especially performant. We could switch to Oniguruma (see the `oniguruma`
+  branch), although this would mean using cgo.
+* Structural PEGs. Use PEGs instead of regular expressions.
