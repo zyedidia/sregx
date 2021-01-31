@@ -9,7 +9,8 @@ by Rob Pike ([link](http://doc.cat-v.org/bell_labs/structural_regexps/)). SRE
 provides a very simple Go package for creating structural regular expression
 commands as well as a library for parsing and compiling SRE commands from the
 text format used in Pike's description. A CLI tool for using structural regular
-is also provided in `./cmd/sre`.
+expressions is also provided in `./cmd/sre`, allowing you to perform advanced
+text manipulation from the command-line.
 
 In a structural regular expression, regular expressions are composed using
 commands to perform tasks like advanced search and replace. A command has
