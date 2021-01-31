@@ -107,8 +107,22 @@ special characters.
 
 ## Installation
 
+There are three ways to install `sre`.
+
+1. Download the prebuilt binary from the releases page.
+
+2. Install from source:
+
 ```
-go get github.com/zyedidia/sre/cmd/sre
+git clone https://github.com/zyedidia/sre
+cd sre
+make build # or make install to install to $GOBIN
+```
+
+3. Install with `go get` (version info will be missing):
+
+```
+go get github.com/zyedidia/perforator/cmd/sre
 ```
 
 ## Base library
