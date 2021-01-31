@@ -150,12 +150,14 @@ type L struct {
 }
 
 func (l L) Evaluate(b []byte) []byte {
-	nlines := bytes.Count(b, []byte{'\n'})
-	if l.Start < 0 {
-		l.Start = nlines + 1 + l.Start
-	}
-	if l.End < 0 {
-		l.End = nlines + 1 + l.End
+	if l.Start < 0 || l.End < 0 {
+		nlines := bytes.Count(b, []byte{'\n'})
+		if l.Start < 0 {
+			l.Start = nlines + 1 + l.Start
+		}
+		if l.End < 0 {
+			l.End = nlines + 1 + l.End
+		}
 	}
 
 	start := IndexN(b, []byte{'\n'}, l.Start) + 1
