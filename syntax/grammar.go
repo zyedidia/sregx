@@ -1,7 +1,6 @@
 package syntax
 
 import (
-	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -237,7 +236,10 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 	case xId, yId, gId, vId, sId:
 		regex, err := regexp.Compile(pattern(n.Children[1], in))
 		if err != nil {
-			return nil, fmt.Errorf("pattern: %w", err)
+			return nil, &vm.ParseError{
+				Pos:     n.Children[1].Start(),
+				Message: err.Error(),
+			}
 		}
 		if id == sId {
 			c = sre.S{
@@ -288,13 +290,16 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 		fn, ok := usrfns[name]
 		if !ok {
 			return nil, &vm.ParseError{
-				Pos:     n.Start(),
+				Pos:     n.Children[0].Start(),
 				Message: "no function defined for " + name,
 			}
 		}
 		eval, err := fn(def)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", name, err)
+			return nil, &vm.ParseError{
+				Pos:     n.Children[1].Start(),
+				Message: err.Error(),
+			}
 		}
 
 		c = sre.U{

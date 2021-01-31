@@ -84,6 +84,8 @@ func main() {
 					fmt.Fprintln(os.Stderr, args[0])
 					fmt.Fprint(os.Stderr, strings.Repeat(" ", pe.Pos.Off))
 					fmt.Fprintln(os.Stderr, "^")
+				} else {
+					fmt.Fprintln(os.Stderr, err)
 				}
 			}
 			os.Exit(1)
