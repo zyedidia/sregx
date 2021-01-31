@@ -65,7 +65,7 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		p.Concat(
 			p.CapId(p.Literal("s"), sId),
 			p.NonTerm("Pattern"),
-			p.NonTerm("Pattern"),
+			p.NonTerm("RPattern"),
 		),
 		p.Concat(
 			p.CapId(p.Literal("c"), cId),
@@ -74,7 +74,10 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		p.CapId(p.Literal("p"), pId),
 		p.CapId(p.Literal("d"), dId),
 		p.Concat(
-			p.CapId(p.Any(1), uId),
+			p.Or(
+				p.CapId(p.Set(charset.Range('a', 'z').Add(charset.Range('A', 'Z'))), uId),
+				p.Error("Invalid command name", nil),
+			),
 			p.NonTerm("Pattern"),
 		),
 	), cmdId),
@@ -83,14 +86,26 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		p.NonTerm("S"),
 		p.NonTerm("Command"),
 	),
-	"Pattern": p.CapId(p.Concat(
-		p.Literal("/"),
-		p.Star(p.Concat(
-			p.Not(p.Literal("/")),
-			p.NonTerm("Char"),
-		)),
-		p.Literal("/"),
-	), pattId),
+	"Pattern": p.Concat(
+		p.Or(
+			p.Literal("/"),
+			p.Error("No starting '/' found", nil),
+		),
+		p.NonTerm("RPattern"),
+	),
+	"RPattern": p.Or(
+		p.CapId(p.Concat(
+			p.Star(p.Concat(
+				p.Not(p.Literal("/")),
+				p.NonTerm("Char"),
+			)),
+			p.Or(
+				p.Literal("/"),
+				p.Error("No closing '/' found", nil),
+			),
+		), pattId),
+		p.Error("Pattern failed to match", nil),
+	),
 	"Char": p.CapId(p.Or(
 		p.Concat(
 			p.Literal("\\"),
@@ -109,8 +124,12 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		),
 		p.Concat(
 			p.Not(p.Literal("\\")),
-			p.Any(1),
+			p.Or(
+				p.Any(1),
+				p.Error("Unexpected end of pattern", nil),
+			),
 		),
+		p.Error("Invalid escaped character", nil),
 	), charId),
 	"S":     p.Star(p.NonTerm("Space")),
 	"Space": p.Set(charset.New([]byte{9, 10, 11, 12, 13, ' '})),
@@ -123,7 +142,7 @@ type ParseError struct {
 }
 
 func (e *ParseError) Error() string {
-	return fmt.Sprintf("%q: %s", e.Pos, e.Msg)
+	return fmt.Sprintf("%v: %s", e.Pos, e.Msg)
 }
 
 // Compile the input string s into an sre expression. The out writer will be

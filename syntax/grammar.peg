@@ -5,13 +5,14 @@ Command       <- 'x' RCommand
                / 'y' RCommand
                / 'g' RCommand
                / 'v' RCommand
-               / 's' Pattern Pattern
+               / 's' Pattern RPattern
                / 'c' Pattern
                / 'p'
                / 'd'
-               / . Pattern
+               / [a-zA-Z] Pattern
 RCommand      <- Pattern S Command
-Pattern       <- '/' (!'/' Char)* '/'
+Pattern       <- '/' RPattern
+RPattern      <- (!'/' Char)* '/'
 Char          <- '\\' [/nrt\\]
                / '\\' [0-2][0-7][0-7]
                / '\\' [0-7][0-7]?
