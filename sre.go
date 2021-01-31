@@ -147,7 +147,7 @@ func (n N) Evaluate(b []byte) []byte {
 	return ReplaceSlice(b, n.Start, n.End, n.Cmd.Evaluate(b[n.Start:n.End]))
 }
 
-// N extracts a slice of lines from the input and replaces that slice with the
+// L extracts a slice of lines from the input and replaces that slice with the
 // return value of Cmd evaluated on it.
 type L struct {
 	Start int
