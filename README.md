@@ -166,9 +166,11 @@ in the expression syntax.
 
 ## Base library
 
-The base library is very simple and small (roughly 100 lines of code). Each
-type of command may be manually created directly in tree form. See the Go
-documentation for details.
+The base library is very simple and small (roughly 100 lines of code). In fact,
+it is surprisingly simple and elegant for something that can provide such
+powerful text manipulation, and I recommend reading the code if you are
+interested. Each type of command may be manually created directly in tree form.
+See the Go documentation for details.
 
 ## Syntax library
 
