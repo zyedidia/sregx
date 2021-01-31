@@ -1,11 +1,11 @@
 package syntax
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
 	"strconv"
-	"errors"
 
 	"github.com/zyedidia/gpeg/capture"
 	"github.com/zyedidia/gpeg/charset"

@@ -9,13 +9,13 @@ import (
 	"os/exec"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/mattn/go-shellwords"
 	"github.com/zyedidia/sre"
 	"github.com/zyedidia/sre/syntax"
-	"github.com/mattn/go-shellwords"
 )
 
 type CheckWriter struct {
-	wrote bool
+	wrote  bool
 	writer io.Writer
 }
 
