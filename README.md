@@ -134,7 +134,7 @@ special characters.
 
 There are three ways to install `sre`.
 
-1. Download the prebuilt binary from the releases page.
+1. Download the prebuilt binary from the releases page (comes with man file).
 
 2. Install from source:
 
@@ -148,6 +148,16 @@ make build # or make install to install to $GOBIN
 
 ```
 go get github.com/zyedidia/sre/cmd/sre
+```
+
+### Usage
+
+To use the CLI tool, first pass the expression and then the input file. If no
+file is given, stdin will be used. Here is an example to capitalize all
+occurrences of the word 'i' in `file.txt`:
+
+```
+sre 'x/[A-Za-z]+/ g/^i$/ c/I/' file.txt
 ```
 
 ## Base library

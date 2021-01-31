@@ -8,7 +8,7 @@ header: SRE Manual
   SRE - Structural Regular Expressions Tool
 
 # SYNOPSIS
-  sre `[--version] [--help] [OPTIONS] EXPRESSION [INPUT-FILE]`
+  sre `[OPTIONS] EXPRESSION [INPUT-FILE]`
 
 # DESCRIPTION
   SRE is a tool for executing structural regular expressions from the command
@@ -145,9 +145,6 @@ Note: it is highly recommended that you enclose expressions in single or
 double quotes to prevent your shell from interpreting special characters.
 
 # OPTIONS
-  `-f, --file`
-
-:    Read input data from file (default: read from stdin).
 
   `-v, --version`
 
