@@ -23,9 +23,9 @@ type CheckWriter struct {
 	Writer io.Writer
 }
 
-func (cw CheckWriter) Write(b []byte) (int, error) {
+func (cw *CheckWriter) Write(b []byte) (int, error) {
 	n, err := cw.Writer.Write(b)
-	if n > 0 && err == nil {
+	if n > 0 {
 		cw.Wrote = true
 	}
 	return n, err
@@ -49,7 +49,7 @@ func main() {
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
-	cw := CheckWriter{
+	cw := &CheckWriter{
 		Writer: os.Stdout,
 	}
 
