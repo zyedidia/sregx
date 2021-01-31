@@ -46,7 +46,7 @@ func hasP(cmd sre.Command) bool {
 
 func main() {
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
-	flagparser.Usage = "[OPTIONS] EXPRESSION"
+	flagparser.Usage = "[OPTIONS] EXPRESSION [INPUT-FILE]"
 	args, err := flagparser.Parse()
 	if err != nil {
 		os.Exit(1)
@@ -61,6 +61,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error: no expression given")
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
+	}
+
+	var file string
+	if len(args) >= 2 {
+		file = args[1]
 	}
 
 	cmds, err := syntax.Compile(args[0], os.Stdout, map[string]syntax.EvalMaker{
@@ -105,15 +110,15 @@ func main() {
 	}
 
 	var input io.ReadCloser
-	if opts.File != "" {
-		f, err := os.Open(opts.File)
+	if file == "" || file == "-" {
+		input = os.Stdin
+	} else {
+		f, err := os.Open(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 		input = f
-	} else {
-		input = os.Stdin
 	}
 	data, err := ioutil.ReadAll(input)
 	if err != nil {

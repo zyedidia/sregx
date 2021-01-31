@@ -8,7 +8,7 @@ header: SRE Manual
   SRE - Structural Regular Expressions Tool
 
 # SYNOPSIS
-  sre `[--version] [--help] [OPTIONS] EXPRESSION`
+  sre `[--version] [--help] [OPTIONS] EXPRESSION [INPUT-FILE]`
 
 # DESCRIPTION
   SRE is a tool for executing structural regular expressions from the command
