@@ -48,9 +48,9 @@ Most of these examples are from Pike's description, so you can look there for
 more detailed explanation. Since `p` is the only command that prints,
 technically you must append `| p` to commands that search and replace, because
 otherwise nothing will be printed. However, since you will probably forget to
-do this if there are no calls to `p` the SRE tool will print the result of the
-final command before terminating. Thus when using the CLI tool you can omit the
-`| p` in the following commands and still see the result.
+do this, the SRE tool will print the result of the final command before
+terminating if there were no calls to `p`. Thus when using the CLI tool you can
+omit the `| p` in the following commands and still see the result.
 
 Print all lines that contain "string":
 
