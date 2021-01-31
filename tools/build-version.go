@@ -73,4 +73,3 @@ func main() {
 
 	fmt.Println(version.String())
 }
-
