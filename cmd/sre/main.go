@@ -14,15 +14,16 @@ import (
 	"github.com/zyedidia/sre/syntax"
 )
 
+// A CheckWriter wraps an io.Writer and sets a flag if it is ever written to.
 type CheckWriter struct {
-	wrote  bool
-	writer io.Writer
+	Wrote  bool
+	Writer io.Writer
 }
 
 func (cw CheckWriter) Write(b []byte) (int, error) {
-	n, err := cw.writer.Write(b)
+	n, err := cw.Writer.Write(b)
 	if n > 0 && err == nil {
-		cw.wrote = true
+		cw.Wrote = true
 	}
 	return n, err
 }
@@ -64,10 +65,12 @@ func main() {
 	}
 
 	cw := CheckWriter{
-		writer: os.Stdout,
+		Writer: os.Stdout,
 	}
 
 	cmds, err := syntax.Compile(args[0], cw, map[string]syntax.EvalMaker{
+		// the u command is a custom command that executes a shell command to
+		// perform the transformation.
 		"u": func(s string) (sre.Evaluator, error) {
 			args, err := shellwords.Parse(s)
 			if err != nil {
@@ -92,7 +95,7 @@ func main() {
 	}
 
 	out := cmds.Evaluate(data)
-	if !cw.wrote {
+	if !cw.Wrote {
 		fmt.Print(string(out))
 	}
 

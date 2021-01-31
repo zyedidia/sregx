@@ -116,6 +116,7 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 	"Space": p.Set(charset.New([]byte{9, 10, 11, 12, 13, ' '})),
 })
 
+// ParseError stores an error message and the position of the error.
 type ParseError struct {
 	Msg string
 	Pos input.Pos
@@ -201,100 +202,73 @@ type EvalMaker func(s string) (sre.Evaluator, error)
 func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]EvalMaker) (sre.Command, error) {
 	var c sre.Command
 
-	switch n.Id {
-	case cmdId:
-		switch n.Children[0].Id {
-		case xId:
-			regex, err := regexp.Compile(pattern(n.Children[1], in))
-			if err != nil {
-				return nil, fmt.Errorf("x pattern: %w", err)
-			}
-			cmd, err := compile(n.Children[2], in, out, usrfns)
-			if err != nil {
-				return nil, err
-			}
-			c = sre.X{
-				Patt: regex,
-				Cmd:  cmd,
-			}
-		case yId:
-			regex, err := regexp.Compile(pattern(n.Children[1], in))
-			if err != nil {
-				return nil, fmt.Errorf("y pattern: %w", err)
-			}
-			cmd, err := compile(n.Children[2], in, out, usrfns)
-			if err != nil {
-				return nil, err
-			}
-			c = sre.Y{
-				Patt: regex,
-				Cmd:  cmd,
-			}
-		case gId:
-			regex, err := regexp.Compile(pattern(n.Children[1], in))
-			if err != nil {
-				return nil, fmt.Errorf("g pattern: %w", err)
-			}
-			cmd, err := compile(n.Children[2], in, out, usrfns)
-			if err != nil {
-				return nil, err
-			}
-			c = sre.G{
-				Patt: regex,
-				Cmd:  cmd,
-			}
-		case vId:
-			regex, err := regexp.Compile(pattern(n.Children[1], in))
-			if err != nil {
-				return nil, fmt.Errorf("v pattern: %w", err)
-			}
-			cmd, err := compile(n.Children[2], in, out, usrfns)
-			if err != nil {
-				return nil, err
-			}
-			c = sre.V{
-				Patt: regex,
-				Cmd:  cmd,
-			}
-		case sId:
-			regex, err := regexp.Compile(pattern(n.Children[1], in))
-			if err != nil {
-				return nil, fmt.Errorf("s pattern: %w", err)
-			}
+	id := n.Children[0].Id
+	switch id {
+	case xId, yId, gId, vId, sId:
+		regex, err := regexp.Compile(pattern(n.Children[1], in))
+		if err != nil {
+			return nil, fmt.Errorf("x pattern: %w", err)
+		}
+		if id == sId {
 			c = sre.S{
 				Patt:    regex,
 				Replace: []byte(pattern(n.Children[2], in)),
 			}
-		case cId:
-			c = sre.C{
-				Change: []byte(pattern(n.Children[1], in)),
-			}
-		case pId:
-			c = sre.P{
-				W: out,
-			}
-		case dId:
-			c = sre.D{}
-		case uId:
-			name := string(in.Slice(n.Children[0].Start(), n.Children[0].End()))
-			def := pattern(n.Children[1], in)
-			fn, ok := usrfns[name]
-			if !ok {
-				return nil, errors.New("no function defined for " + name)
-			}
-			eval, err := fn(def)
+		} else {
+			cmd, err := compile(n.Children[2], in, out, usrfns)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", name, err)
+				return nil, err
 			}
+			switch id {
+			case xId:
+				c = sre.X{
+					Patt: regex,
+					Cmd:  cmd,
+				}
+			case yId:
+				c = sre.Y{
+					Patt: regex,
+					Cmd:  cmd,
+				}
+			case gId:
+				c = sre.G{
+					Patt: regex,
+					Cmd:  cmd,
+				}
+			case vId:
+				c = sre.V{
+					Patt: regex,
+					Cmd:  cmd,
+				}
+			}
+		}
+	case cId:
+		c = sre.C{
+			Change: []byte(pattern(n.Children[1], in)),
+		}
+	case pId:
+		c = sre.P{
+			W: out,
+		}
+	case dId:
+		c = sre.D{}
+	case uId:
+		name := string(in.Slice(n.Children[0].Start(), n.Children[0].End()))
+		def := pattern(n.Children[1], in)
+		fn, ok := usrfns[name]
+		if !ok {
+			return nil, errors.New("no function defined for " + name)
+		}
+		eval, err := fn(def)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", name, err)
+		}
 
-			c = sre.U{
-				Evaluator: eval,
-			}
-		default:
-			panic("error: not a valid ID")
+		c = sre.U{
+			Evaluator: eval,
 		}
 	default:
-		panic("error: not a command")
+		panic("error: not a valid ID")
 	}
 
 	return c, nil
