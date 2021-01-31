@@ -2,14 +2,17 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/mattn/go-shellwords"
+	"github.com/zyedidia/gpeg/vm"
 	"github.com/zyedidia/sre"
 	"github.com/zyedidia/sre/syntax"
 )
@@ -46,24 +49,6 @@ func main() {
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
-
-	var input io.ReadCloser
-	if opts.File != "" {
-		f, err := os.Open(opts.File)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		input = f
-	} else {
-		input = os.Stdin
-	}
-	data, err := ioutil.ReadAll(input)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	cw := CheckWriter{
 		Writer: os.Stdout,
 	}
@@ -89,6 +74,36 @@ func main() {
 			}, nil
 		},
 	})
+	if err != nil {
+		var e syntax.MultiError
+		if errors.As(err, &e) {
+			for _, err := range e {
+				var pe *vm.ParseError
+				if errors.As(err, &pe) {
+					fmt.Fprintf(os.Stderr, "%d: %s\n", pe.Pos.Off, pe.Message)
+					fmt.Fprintln(os.Stderr, args[0])
+					fmt.Fprint(os.Stderr, strings.Repeat(" ", pe.Pos.Off))
+					fmt.Fprintln(os.Stderr, "^")
+				}
+			}
+			os.Exit(1)
+		}
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	var input io.ReadCloser
+	if opts.File != "" {
+		f, err := os.Open(opts.File)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		input = f
+	} else {
+		input = os.Stdin
+	}
+	data, err := ioutil.ReadAll(input)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

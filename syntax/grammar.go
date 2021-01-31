@@ -1,7 +1,6 @@
 package syntax
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -15,6 +14,19 @@ import (
 	"github.com/zyedidia/gpeg/vm"
 	"github.com/zyedidia/sre"
 )
+
+// MultiError represents multiple errors.
+type MultiError []error
+
+// Error prints all the errors sequentially.
+func (e MultiError) Error() string {
+	s := ""
+	for _, err := range e {
+		s += err.Error()
+		s += ","
+	}
+	return s
+}
 
 const (
 	cmdId = iota
@@ -76,7 +88,13 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		p.Concat(
 			p.Or(
 				p.CapId(p.Set(charset.Range('a', 'z').Add(charset.Range('A', 'Z'))), uId),
-				p.Error("Invalid command name", nil),
+				p.Concat(
+					p.Or(
+						p.And(p.Any(1)),
+						p.Error("Expected command, found EOF", nil),
+					),
+					p.Error("Invalid command name", nil),
+				),
 			),
 			p.NonTerm("Pattern"),
 		),
@@ -135,16 +153,6 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 	"Space": p.Set(charset.New([]byte{9, 10, 11, 12, 13, ' '})),
 })
 
-// ParseError stores an error message and the position of the error.
-type ParseError struct {
-	Msg string
-	Pos input.Pos
-}
-
-func (e *ParseError) Error() string {
-	return fmt.Sprintf("%v: %s", e.Pos, e.Msg)
-}
-
 // Compile the input string s into an sre expression. The out writer will be
 // used when creating p commands (a p command will write to the given writer,
 // generally this will be os.Stdout). A map of user functions may be given to
@@ -154,12 +162,15 @@ func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sre.Command,
 	code := vm.Encode(peg)
 	in := input.StringReader(s)
 	machine := vm.NewVM(in, code)
-	match, n, ast, _ := machine.Exec(memo.NoneTable{})
+	match, n, ast, errs := machine.Exec(memo.NoneTable{})
+	if errs != nil {
+		return nil, MultiError(errs)
+	}
 	if !match {
-		return nil, &ParseError{
-			Msg: "not a valid structural regex",
-			Pos: n,
-		}
+		return nil, MultiError{&vm.ParseError{
+			Message: "not a valid structural regex",
+			Pos:     n,
+		}}
 	}
 
 	inp := input.NewInput(in)
@@ -168,7 +179,7 @@ func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sre.Command,
 		var err error
 		cmds[i], err = compile(n, inp, out, usrfns)
 		if err != nil {
-			return nil, fmt.Errorf("cmd %d: %w", i, err)
+			return nil, MultiError{err}
 		}
 	}
 
@@ -276,7 +287,10 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 		def := pattern(n.Children[1], in)
 		fn, ok := usrfns[name]
 		if !ok {
-			return nil, errors.New("no function defined for " + name)
+			return nil, &vm.ParseError{
+				Pos:     n.Start(),
+				Message: "no function defined for " + name,
+			}
 		}
 		eval, err := fn(def)
 		if err != nil {
