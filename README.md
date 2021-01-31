@@ -1,6 +1,7 @@
 # Structural Regular Expressions
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/zyedidia/sre.svg)](https://pkg.go.dev/github.com/zyedidia/sre)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zyedidia/sre)](https://goreportcard.com/report/github.com/zyedidia/sre)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/sre/blob/master/LICENSE)
 
 SRE is a package and tool for using structural regular expressions as described
