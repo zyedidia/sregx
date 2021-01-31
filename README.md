@@ -122,7 +122,7 @@ make build # or make install to install to $GOBIN
 3. Install with `go get` (version info will be missing):
 
 ```
-go get github.com/zyedidia/perforator/cmd/sre
+go get github.com/zyedidia/sre/cmd/sre
 ```
 
 ## Base library
