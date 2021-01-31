@@ -31,6 +31,8 @@ const (
 	cmdId = iota
 	pattId
 	charId
+	numId
+	rangeId
 	xId
 	yId
 	gId
@@ -39,6 +41,8 @@ const (
 	cId
 	pId
 	dId
+	nId
+	lId
 	uId
 )
 
@@ -82,6 +86,16 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 			p.CapId(p.Literal("c"), cId),
 			p.NonTerm("Pattern"),
 		),
+		p.Concat(
+			p.CapId(p.Literal("n"), nId),
+			p.NonTerm("Range"),
+			p.NonTerm("Command"),
+		),
+		p.Concat(
+			p.CapId(p.Literal("l"), lId),
+			p.NonTerm("Range"),
+			p.NonTerm("Command"),
+		),
 		p.CapId(p.Literal("p"), pId),
 		p.CapId(p.Literal("d"), dId),
 		p.Concat(
@@ -123,6 +137,13 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		), pattId),
 		p.Error("Pattern failed to match", nil),
 	),
+	"Range": p.CapId(p.Concat(
+		p.Literal("["),
+		p.NonTerm("Number"),
+		p.Literal(":"),
+		p.NonTerm("Number"),
+		p.Literal("]"),
+	), rangeId),
 	"Char": p.CapId(p.Or(
 		p.Concat(
 			p.Literal("\\"),
@@ -148,6 +169,10 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		),
 		p.Error("Invalid escaped character", nil),
 	), charId),
+	"Number": p.CapId(p.Concat(
+		p.Optional(p.Literal("-")),
+		p.Plus(p.Set(charset.Range('0', '9'))),
+	), numId),
 	"S":     p.Star(p.NonTerm("Space")),
 	"Space": p.Set(charset.New([]byte{9, 10, 11, 12, 13, ' '})),
 })
@@ -224,6 +249,15 @@ func pattern(n *capture.Node, in *input.Input) string {
 	return string(runes)
 }
 
+func rangeNums(n *capture.Node, in *input.Input) (int, int) {
+	startn := n.Children[0]
+	endn := n.Children[1]
+
+	start, _ := strconv.Atoi(string(in.Slice(startn.Start(), startn.End())))
+	end, _ := strconv.Atoi(string(in.Slice(endn.Start(), endn.End())))
+	return start, end
+}
+
 // An EvalMaker uses some definition string to create a function that can do
 // evaluation.
 type EvalMaker func(s string) (sre.Evaluator, error)
@@ -277,6 +311,25 @@ func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]
 	case cId:
 		c = sre.C{
 			Change: []byte(pattern(n.Children[1], in)),
+		}
+	case nId, lId:
+		start, end := rangeNums(n.Children[1], in)
+		cmd, err := compile(n.Children[2], in, out, usrfns)
+		if err != nil {
+			return nil, err
+		}
+		if id == nId {
+			c = sre.N{
+				Start: start,
+				End:   end,
+				Cmd:   cmd,
+			}
+		} else { // lId
+			c = sre.L{
+				Start: start,
+				End:   end,
+				Cmd:   cmd,
+			}
 		}
 	case pId:
 		c = sre.P{

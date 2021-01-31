@@ -17,18 +17,31 @@ import (
 	"github.com/zyedidia/sre/syntax"
 )
 
-// A CheckWriter wraps an io.Writer and sets a flag if it is ever written to.
-type CheckWriter struct {
-	Wrote  bool
-	Writer io.Writer
-}
-
-func (cw *CheckWriter) Write(b []byte) (int, error) {
-	n, err := cw.Writer.Write(b)
-	if n > 0 {
-		cw.Wrote = true
+// Returns true if there is a p command used anywhere within this command.
+func hasP(cmd sre.Command) bool {
+	switch cmd := cmd.(type) {
+	case sre.P:
+		return true
+	case sre.CommandPipeline:
+		for _, c := range cmd {
+			if hasP(c) {
+				return true
+			}
+		}
+	case sre.X:
+		return hasP(cmd.Cmd)
+	case sre.Y:
+		return hasP(cmd.Cmd)
+	case sre.G:
+		return hasP(cmd.Cmd)
+	case sre.V:
+		return hasP(cmd.Cmd)
+	case sre.L:
+		return hasP(cmd.Cmd)
+	case sre.N:
+		return hasP(cmd.Cmd)
 	}
-	return n, err
+	return false
 }
 
 func main() {
@@ -49,11 +62,8 @@ func main() {
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
-	cw := &CheckWriter{
-		Writer: os.Stdout,
-	}
 
-	cmds, err := syntax.Compile(args[0], cw, map[string]syntax.EvalMaker{
+	cmds, err := syntax.Compile(args[0], os.Stdout, map[string]syntax.EvalMaker{
 		// the u command is a custom command that executes a shell command to
 		// perform the transformation.
 		"u": func(s string) (sre.Evaluator, error) {
@@ -112,7 +122,7 @@ func main() {
 	}
 
 	out := cmds.Evaluate(data)
-	if !cw.Wrote {
+	if !hasP(cmds) {
 		fmt.Print(string(out))
 	}
 

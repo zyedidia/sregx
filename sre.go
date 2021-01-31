@@ -1,6 +1,7 @@
 package sre
 
 import (
+	"bytes"
 	"io"
 	"regexp"
 )
@@ -123,6 +124,44 @@ type C struct {
 // Evaluate returns Change.
 func (c C) Evaluate(b []byte) []byte {
 	return c.Change
+}
+
+type N struct {
+	Start int
+	End   int
+	Cmd   Command
+}
+
+func (n N) Evaluate(b []byte) []byte {
+	if n.Start < 0 {
+		n.Start = len(b) + 1 + n.Start
+	}
+	if n.End < 0 {
+		n.End = len(b) + 1 + n.End
+	}
+
+	return ReplaceSlice(b, n.Start, n.End, n.Cmd.Evaluate(b[n.Start:n.End]))
+}
+
+type L struct {
+	Start int
+	End   int
+	Cmd   Command
+}
+
+func (l L) Evaluate(b []byte) []byte {
+	nlines := bytes.Count(b, []byte{'\n'})
+	if l.Start < 0 {
+		l.Start = nlines + 1 + l.Start
+	}
+	if l.End < 0 {
+		l.End = nlines + 1 + l.End
+	}
+
+	start := IndexN(b, []byte{'\n'}, l.Start) + 1
+	end := IndexN(b, []byte{'\n'}, l.End) + 1
+
+	return ReplaceSlice(b, start, end, l.Cmd.Evaluate(b[start:end]))
 }
 
 // Evaluator is a function that performs a transformation.

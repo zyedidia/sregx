@@ -7,16 +7,20 @@ Command       <- 'x' RCommand
                / 'v' RCommand
                / 's' Pattern RPattern
                / 'c' Pattern
+               / 'n' Range Command
+               / 'l' Range Command
                / 'p'
                / 'd'
                / [a-zA-Z] Pattern
 RCommand      <- Pattern S Command
 Pattern       <- '/' RPattern
 RPattern      <- (!'/' Char)* '/'
+Range         <- '[' Number ':' Number ']'
 Char          <- '\\' [/nrt\\]
                / '\\' [0-2][0-7][0-7]
                / '\\' [0-7][0-7]?
                / !'\\' .
+Number        <- '-'? [0-9]+
 Pipe          <- S '|' S
 S             <- Space*
 Space         <- [\11-\15\40]

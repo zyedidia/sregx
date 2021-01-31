@@ -1,6 +1,9 @@
 package sre
 
-import "regexp"
+import (
+	"bytes"
+	"regexp"
+)
 
 // ReplaceAllComplementFunc returns a copy of b in which all parts that are not
 // matched by re have been replaced by the return value of the function repl
@@ -26,4 +29,34 @@ func ReplaceAllComplementFunc(re *regexp.Regexp, b []byte, repl func([]byte) []b
 	}
 
 	return buf
+}
+
+// IndexN find index of n-th sep in b
+func IndexN(b, sep []byte, n int) (index int) {
+	index, idx, sepLen := 0, -1, len(sep)
+	for i := 0; i < n; i++ {
+		if idx = bytes.Index(b, sep); idx == -1 {
+			break
+		}
+		b = b[idx+sepLen:]
+		index += idx
+	}
+
+	if idx == -1 {
+		index = -1
+	} else {
+		index += (n - 1) * sepLen
+	}
+
+	return
+}
+
+// ReplaceSlice returns a copy of b where the range start:end has been replaced
+// with repl.
+func ReplaceSlice(b []byte, start, end int, repl []byte) []byte {
+	dst := make([]byte, 0, len(b)-end+start+len(repl))
+	dst = append(dst, b[:start]...)
+	dst = append(dst, repl...)
+	dst = append(dst, b[end:]...)
+	return dst
 }
