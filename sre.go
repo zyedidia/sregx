@@ -3,7 +3,8 @@ package sre
 import (
 	"bytes"
 	"io"
-	"regexp"
+
+	regexp "github.com/src-d/go-oniguruma"
 )
 
 // A Command modifies an input byte slice in some way and returns the new one.

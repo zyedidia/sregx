@@ -2,8 +2,9 @@ package syntax
 
 import (
 	"io"
-	"regexp"
 	"strconv"
+
+	regexp "github.com/src-d/go-oniguruma"
 
 	"github.com/zyedidia/gpeg/capture"
 	"github.com/zyedidia/gpeg/charset"

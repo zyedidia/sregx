@@ -2,7 +2,8 @@ package sre
 
 import (
 	"bytes"
-	"regexp"
+
+	regexp "github.com/src-d/go-oniguruma"
 )
 
 // ReplaceAllComplementFunc returns a copy of b in which all parts that are not
