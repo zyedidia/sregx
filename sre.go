@@ -126,12 +126,16 @@ func (c C) Evaluate(b []byte) []byte {
 	return c.Change
 }
 
+// N extracts a slice of the input and replaces that slice with the return
+// value of Cmd evaluated on it.
 type N struct {
 	Start int
 	End   int
 	Cmd   Command
 }
 
+// Evaluate calculates slices the input with [start:end] and replaces that part
+// of the input with the application of Cmd to it.
 func (n N) Evaluate(b []byte) []byte {
 	if n.Start < 0 {
 		n.Start = len(b) + 1 + n.Start
@@ -143,12 +147,16 @@ func (n N) Evaluate(b []byte) []byte {
 	return ReplaceSlice(b, n.Start, n.End, n.Cmd.Evaluate(b[n.Start:n.End]))
 }
 
+// N extracts a slice of lines from the input and replaces that slice with the
+// return value of Cmd evaluated on it.
 type L struct {
 	Start int
 	End   int
 	Cmd   Command
 }
 
+// Evaluate calculates the offsets for the line range Start:End and replaces
+// that part of the input with the application of Cmd to it.
 func (l L) Evaluate(b []byte) []byte {
 	if l.Start < 0 || l.End < 0 {
 		nlines := bytes.Count(b, []byte{'\n'})
