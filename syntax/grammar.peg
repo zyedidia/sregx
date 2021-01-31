@@ -9,6 +9,7 @@ Command       <- 'x' RCommand
                / 'c' Pattern
                / 'p'
                / 'd'
+               / . Pattern
 RCommand      <- Pattern S Command
 Pattern       <- '/' (!'/' Char)* '/'
 Char          <- '\\' [/nrt\\]

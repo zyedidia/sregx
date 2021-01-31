@@ -110,3 +110,15 @@ type C struct {
 func (c C) Evaluate(b []byte) []byte {
 	return c.Change
 }
+
+type Evaluator func(b []byte) []byte
+
+// U is a user-defined command. The user provides the evaluator function that
+// is used to perform the transformation.
+type U struct {
+	Evaluator Evaluator
+}
+
+func (u U) Evaluate(b []byte) []byte {
+	return u.Evaluator(b)
+}

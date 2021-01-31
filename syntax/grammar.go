@@ -5,6 +5,7 @@ import (
 	"io"
 	"regexp"
 	"strconv"
+	"errors"
 
 	"github.com/zyedidia/gpeg/capture"
 	"github.com/zyedidia/gpeg/charset"
@@ -27,6 +28,7 @@ const (
 	cId
 	pId
 	dId
+	uId
 )
 
 var grammar = p.Grammar("SRE", map[string]p.Pattern{
@@ -71,6 +73,10 @@ var grammar = p.Grammar("SRE", map[string]p.Pattern{
 		),
 		p.CapId(p.Literal("p"), pId),
 		p.CapId(p.Literal("d"), dId),
+		p.Concat(
+			p.CapId(p.Any(1), uId),
+			p.NonTerm("Pattern"),
+		),
 	), cmdId),
 	"RCommand": p.Concat(
 		p.NonTerm("Pattern"),
@@ -121,8 +127,9 @@ func (e *ParseError) Error() string {
 
 // Compile the input string s into an sre expression. The out writer will be
 // used when creating p commands (a p command will write to the given writer,
-// generally this will be os.Stdout).
-func Compile(s string, out io.Writer) (sre.Command, error) {
+// generally this will be os.Stdout). A map of user functions may be given to
+// define custom command types. The command name must be a single letter.
+func Compile(s string, out io.Writer, usrfns map[string]EvalMaker) (sre.Command, error) {
 	peg := p.MustCompile(grammar)
 	code := vm.Encode(peg)
 	in := input.StringReader(s)
@@ -139,7 +146,7 @@ func Compile(s string, out io.Writer) (sre.Command, error) {
 	cmds := make(sre.CommandPipeline, len(ast))
 	for i, n := range ast {
 		var err error
-		cmds[i], err = compile(n, inp, out)
+		cmds[i], err = compile(n, inp, out, usrfns)
 		if err != nil {
 			return nil, fmt.Errorf("cmd %d: %w", i, err)
 		}
@@ -187,7 +194,11 @@ func pattern(n *capture.Node, in *input.Input) string {
 	return string(runes)
 }
 
-func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, error) {
+// An EvalMaker uses some definition string to create a function that can do
+// evaluation.
+type EvalMaker func(s string) (sre.Evaluator, error)
+
+func compile(n *capture.Node, in *input.Input, out io.Writer, usrfns map[string]EvalMaker) (sre.Command, error) {
 	var c sre.Command
 
 	switch n.Id {
@@ -198,7 +209,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, erro
 			if err != nil {
 				return nil, fmt.Errorf("x pattern: %w", err)
 			}
-			cmd, err := compile(n.Children[2], in, out)
+			cmd, err := compile(n.Children[2], in, out, usrfns)
 			if err != nil {
 				return nil, err
 			}
@@ -211,7 +222,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, erro
 			if err != nil {
 				return nil, fmt.Errorf("y pattern: %w", err)
 			}
-			cmd, err := compile(n.Children[2], in, out)
+			cmd, err := compile(n.Children[2], in, out, usrfns)
 			if err != nil {
 				return nil, err
 			}
@@ -224,7 +235,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, erro
 			if err != nil {
 				return nil, fmt.Errorf("g pattern: %w", err)
 			}
-			cmd, err := compile(n.Children[2], in, out)
+			cmd, err := compile(n.Children[2], in, out, usrfns)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +248,7 @@ func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, erro
 			if err != nil {
 				return nil, fmt.Errorf("v pattern: %w", err)
 			}
-			cmd, err := compile(n.Children[2], in, out)
+			cmd, err := compile(n.Children[2], in, out, usrfns)
 			if err != nil {
 				return nil, err
 			}
@@ -264,6 +275,21 @@ func compile(n *capture.Node, in *input.Input, out io.Writer) (sre.Command, erro
 			}
 		case dId:
 			c = sre.D{}
+		case uId:
+			name := string(in.Slice(n.Children[0].Start(), n.Children[0].End()))
+			def := pattern(n.Children[1], in)
+			fn, ok := usrfns[name]
+			if !ok {
+				return nil, errors.New("no function defined for " + name)
+			}
+			eval, err := fn(def)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", name, err)
+			}
+
+			c = sre.U{
+				Evaluator: eval,
+			}
 		default:
 			panic("error: not a valid ID")
 		}

@@ -32,6 +32,11 @@ supported:
 * `y/<p>/<cmd>/`: returns a string where each part of the string that is not
   matched by `<cmd>` is replaced by applying `<cmd>` to the particular
   unmatched string.
+* `u/<sh>/`: executes the shell command `<sh>` with the input as stdin and
+  returns the resulting stdout of the command. Shell commands use a simple
+  syntax where single or double quotes can be used to group arguments, and
+  environment variables are accessible with `$`. This command is only directly
+  available as part of the SRE CLI tool.
 
 The SRE tool also provides an augmentation to the original SRE description from
 Pike: command pipelines. A command may be given as `<cmd> | <cmd> | ...` where
@@ -40,8 +45,12 @@ the input of each command is the output of the previous one.
 ### Examples
 
 Most of these examples are from Pike's description, so you can look there for
-more detailed explanation. Note that in SRE, output will only be printed when
-the `p` command is used.
+more detailed explanation. Since `p` is the only command that prints,
+technically you must append `| p` to commands that search and replace, because
+otherwise nothing will be printed. However, since you will probably forget to
+do this if there are no calls to `p` the SRE tool will print the result of the
+final command before terminating. Thus when using the CLI tool you can omit the
+`| p` in the following commands and still see the result.
 
 Print all lines that contain "string":
 
@@ -78,6 +87,18 @@ occurring in double or single quoted strings:
 
 ```
 y/".*"/ y/'.*'/ x/[a-zA-Z0-9]+/ g/^foo$/ c/bar/ | p
+```
+
+Replace the complete word "TODAY" with the current date:
+
+```
+x/[A-Z]+/ g/^TODAY$/ u/date/ | p
+```
+
+Capitalize all words:
+
+```
+x/[a-zA-Z]+/ x/^./ u/tr a-z A-Z/ | p
 ```
 
 Note: it is highly recommended when using the CLI tool that you enclose

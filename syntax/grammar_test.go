@@ -29,7 +29,7 @@ func check(cmd sre.Command, tests []Test, t *testing.T) {
 func TestCVar(t *testing.T) {
 	// Renames c variables called 'n' to 'num'. Omits matches in strings.
 	// expression: y/".*"/y/'.*'/x/[a-zA-Z0-9]+/g/n/v/../c/num/
-	cmd, err := syntax.Compile(`y/".*"/ y/'.*'/ x/[a-zA-Z0-9]+/ g/n/ v/../ c/num/`, ioutil.Discard)
+	cmd, err := syntax.Compile(`y/".*"/ y/'.*'/ x/[a-zA-Z0-9]+/ g/n/ v/../ c/num/`, ioutil.Discard, nil)
 	if err != nil {
 		t.Error(err)
 	}
