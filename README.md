@@ -46,7 +46,7 @@ supported:
   environment variables are accessible with `$`. This command is only directly
   available as part of the sregx CLI tool.
 
-The commands `n[...]`, `m[...]`, and `u` are additions to the original
+The commands `n[...]`, `l[...]`, and `u` are additions to the original
 description of structural regular expressions.
 
 The sregx tool also provides another augmentation to the original sregx description
