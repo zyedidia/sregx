@@ -31,7 +31,7 @@ type X struct {
 	Cmd  Command
 }
 
-// Evaluate replaces all parts of b that are matached by Patt with the
+// Evaluate replaces all parts of b that are matched by Patt with the
 // application of Cmd to those substrings.
 func (x X) Evaluate(b []byte) []byte {
 	return x.Patt.ReplaceAllFunc(b, func(b []byte) []byte {

@@ -31,7 +31,7 @@ supported:
   expression `<p>` have been replaced with the return value of `<cmd>` applied
   to the particular substring.
 * `y/<p>/<cmd>`: returns a string where each part of the string that is not
-  matched by `<cmd>` is replaced by applying `<cmd>` to the particular
+  matched by `<p>` is replaced by applying `<cmd>` to the particular
   unmatched string.
 * `n[N:M]<cmd>`: returns the application of `<cmd>` to the input sliced from
   `[N:M)`. Accepts negative numbers to refer to offsets from the end of the
