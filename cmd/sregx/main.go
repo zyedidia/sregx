@@ -17,6 +17,13 @@ import (
 	"github.com/zyedidia/sregx/syntax"
 )
 
+func must(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
 // Returns true if there is a p command used anywhere within this command.
 func hasP(cmd sregx.Command) bool {
 	switch cmd := cmd.(type) {
@@ -68,7 +75,26 @@ func main() {
 		file = args[1]
 	}
 
-	cmds, err := syntax.Compile(args[0], os.Stdout, map[string]syntax.EvalMaker{
+	var input io.ReadCloser
+	if file == "" || file == "-" {
+		input = os.Stdin
+	} else {
+		f, err := os.Open(file)
+		must(err)
+		input = f
+	}
+	data, err := ioutil.ReadAll(input)
+	must(err)
+	input.Close()
+
+	var output io.Writer = os.Stdout
+	if opts.Inplace && file != "" && file != "-" {
+		f, err := os.Open(file)
+		must(err)
+		output = f
+	}
+
+	cmds, err := syntax.Compile(args[0], output, map[string]syntax.EvalMaker{
 		// the u command is a custom command that executes a shell command to
 		// perform the transformation.
 		"u": func(s string) (sregx.Evaluator, error) {
@@ -109,27 +135,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	var input io.ReadCloser
-	if file == "" || file == "-" {
-		input = os.Stdin
-	} else {
-		f, err := os.Open(file)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		input = f
-	}
-	data, err := ioutil.ReadAll(input)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	out := cmds.Evaluate(data)
 	if !hasP(cmds) {
-		fmt.Print(string(out))
+		_, err := output.Write(out)
+		must(err)
 	}
-
-	input.Close()
+	if o, ok := output.(io.Closer); ok {
+		o.Close()
+	}
 }
