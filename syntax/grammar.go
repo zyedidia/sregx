@@ -227,12 +227,12 @@ var special = map[byte]byte{
 	'/':  '/',
 }
 
-func char(b []byte) rune {
+func char(b []byte) byte {
 	switch b[0] {
 	case '\\':
 		for k, v := range special {
 			if b[1] == k {
-				return rune(v)
+				return byte(v)
 			}
 		}
 
@@ -240,22 +240,22 @@ func char(b []byte) rune {
 		if err != nil {
 			panic("bad char")
 		}
-		return rune(i)
+		return byte(i)
 	default:
-		return rune(b[0])
+		return byte(b[0])
 	}
 }
 
 func pattern(n *capture.Node, in *input.Input) string {
-	var runes []rune
+	var bytes []byte
 	for _, c := range n.Children {
 		if c.Id != charId {
 			continue
 		}
 
-		runes = append(runes, char(in.Slice(c.Start(), c.End())))
+		bytes = append(bytes, char(in.Slice(c.Start(), c.End())))
 	}
-	return string(runes)
+	return string(bytes)
 }
 
 func rangeNums(n *capture.Node, in *input.Input) (int, int) {
