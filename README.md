@@ -86,7 +86,7 @@ l[5:10]s/foo/bar/ | p
 Print all lines containing "rob" but not "robot":
 
 ```
-x/.*\n/ g/rob v/robot/p
+x/.*\n/ g/rob/ v/robot/p
 ```
 
 Capitalize all occurrences of the word "i":
