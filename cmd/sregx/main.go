@@ -87,12 +87,7 @@ func main() {
 	must(err)
 	input.Close()
 
-	var output io.Writer = os.Stdout
-	if opts.Inplace && file != "" && file != "-" {
-		f, err := os.OpenFile(file, os.O_WRONLY|os.O_TRUNC, 0755)
-		must(err)
-		output = f
-	}
+	output := &bytes.Buffer{}
 
 	cmds, err := syntax.Compile(args[0], output, map[string]syntax.EvalMaker{
 		// the u command is a custom command that executes a shell command to
@@ -135,12 +130,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	var outputf io.Writer = os.Stdout
+	if opts.Inplace && file != "" && file != "-" {
+		f, err := os.OpenFile(file, os.O_WRONLY|os.O_TRUNC, 0755)
+		must(err)
+		outputf = f
+	}
+
+	io.Copy(outputf, output)
+
 	out := cmds.Evaluate(data)
 	if !hasP(cmds) {
-		_, err := output.Write(out)
+		_, err := outputf.Write(out)
 		must(err)
 	}
-	if o, ok := output.(io.Closer); ok {
+	if o, ok := outputf.(io.Closer); ok {
 		o.Close()
 	}
 }
