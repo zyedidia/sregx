@@ -89,7 +89,7 @@ func main() {
 
 	var output io.Writer = os.Stdout
 	if opts.Inplace && file != "" && file != "-" {
-		f, err := os.Open(file)
+		f, err := os.OpenFile(file, os.O_WRONLY|os.O_TRUNC, 0755)
 		must(err)
 		output = f
 	}
